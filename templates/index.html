@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
+    <link rel="stylesheet" type="text/css" href= "{{ url_for( 'static', filename='styles/style.css') }}">
+    
+</head>
+<body>
+
+	<div id="header">
+		<h1>SPorts News</h1>
+    </div>
+    
+    <div id="checkboxes">
+        <div id="collegeSelector">
+            <input type="checkbox" id="collegeCheck" name="collegeCheck">
+            <label for="collegeCheck">College</label>
+        </div>
+            
+        <div id="pokerSelector">
+            <input type="checkbox" id="pokerCheck" name="pokerCheck">
+            <label for="pokerCheck">Poker</label>
+        </div>
+    
+        <div id="motorSelector">
+            <input type="checkbox" id="motorCheck" name="motorCheck">
+            <label for="motorCheck">Motorsports</label>
+        </div>
+    </div>
+
+
+	<div id="content"></div>
+ 
+    <script>
+        $('#collegeCheck').change(function() {
+            refreshContent();
+        });
+
+        $('#pokerCheck').change(function() {
+            refreshContent();
+        });
+
+        $('#motorCheck').change(function() {
+            refreshContent();  
+        });
+
+        function refreshContent(){
+            var collegeUrl = "http://www.espn.com/espn/rss/espnu/news";
+            var pokerUrl = "http://www.espn.com/espn/rss/poker/master";
+            var motorUrl = "http://www.espn.com/espn/rss/rpm/news";
+
+            document.querySelector("#content").innerHTML = "<div></div>";
+
+            if ($("#collegeCheck").is(":checked")){
+                $.get(collegeUrl).done(function(data){xmlLoaded(data);});
+            }
+            if ($("#pokerCheck").is(":checked")){
+                $.get(pokerUrl).done(function(data){xmlLoaded(data);});
+            }
+            if ($("#motorCheck").is(":checked")){
+                $.get(motorUrl).done(function(data){xmlLoaded(data);});
+            }
+        }
+        
+        function xmlLoaded(obj){
+            console.log("obj = " +obj);
+            var items = obj.querySelectorAll("item");
+            
+            //parse the data
+            var html = "";
+            for (var i=0;i<items.length;i++){
+                //get the data out of the item
+                var newsItem = items[i];
+                var title = newsItem.querySelector("title").firstChild.nodeValue;
+                console.log(title);
+                var description = newsItem.querySelector("description").firstChild.nodeValue;
+                var link = newsItem.querySelector("link").firstChild.nodeValue;
+                var pubDate = newsItem.querySelector("pubDate").firstChild.nodeValue;
+                
+                //present the item as HTML
+                var line = '<div class="item">';
+                line += "<h2>"+title+"</h2>";
+                line += '<p><i>'+pubDate+'</i> - <a href="'+link+'" target="_blank">Full Article</a></p>';
+                line += "</div>";
+                
+                html += line;
+            }
+            document.querySelector("#content").innerHTML += html;
+            $("#content").fadeIn(1000);
+        }
+    </script>
+
+</body>
+</html>

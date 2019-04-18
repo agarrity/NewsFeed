@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
+    
+</head>
+<body>
+    <div class="main">
+        <form class="form" method="post" action="#">
+            <h2>Login To See Sports News</h2>
+            <label>Username :</label>
+            <input type="text" name="username" id="username">
+            <label>Password :</label>
+            <input type="password" name="password" id="password">
+            <input type="button" name="login" id="login" value="Login">
+        </form>
+    </div>
+
+    <script>
+        $(document).ready(function(){
+            $("#login").click(function(){
+                var username = $("#username").val();
+                var password = $("#password").val();
+
+                $.ajax("/login", {
+                    type: "POST",
+                    data: {"username" : username, "password" : password },
+                    statusCode: {
+                        200: function (response) {
+                            window.location.replace("/");
+                        },
+                        400: function (response) {
+                            alert('Incorrect username or password');
+                        }
+                    }
+                });
+            });
+        });
+    </script>
+</body>
