@@ -8,61 +8,99 @@
 <body>
 
 	<div id="header">
-		<h1>SPorts News</h1>
+        <h1>SPorts News</h1>
+        <h3>Last Login {{lastLogin}}</h3>
+        <input type="button" id="logoutButton" value="Logout">
     </div>
     
-    <div id="checkboxes">
-        <div id="collegeSelector">
+    <div align="left" id="checkboxes" >
+        <div id="college">
             <input type="checkbox" id="collegeCheck" name="collegeCheck">
             <label for="collegeCheck">College</label>
         </div>
             
-        <div id="pokerSelector">
+        <div id="poker">
             <input type="checkbox" id="pokerCheck" name="pokerCheck">
-            <label for="pokerCheck">Poker</label>
+            <label for="pokerCheck">NHL</label>
         </div>
     
-        <div id="motorSelector">
+        <div id="motor">
             <input type="checkbox" id="motorCheck" name="motorCheck">
             <label for="motorCheck">Motorsports</label>
         </div>
+
+        <div id="favorite">
+            <input type="radio" id="favoriteRadio" name="favoriteRadio">
+            <label for="favoriteRadio">Favorites</label>
+        </div>
     </div>
+    
 
 
-	<div id="content"></div>
+	<div id="content" class="content"></div>
  
     <script>
+        $('#logoutButton').click(function() {
+            $.ajax("/logout", {
+                    type: "POST",
+                    data: {},
+                    statusCode: {
+                        200: function (response) {
+                            window.location.replace("/");
+                        }
+                    }
+                });
+        });
+
         $('#collegeCheck').change(function() {
             refreshContent();
+            $('#favoriteRadio').prop("checked", false);
         });
 
         $('#pokerCheck').change(function() {
             refreshContent();
+            $('#favoriteRadio').prop("checked", false);
         });
 
         $('#motorCheck').change(function() {
             refreshContent();  
+            $('#favoriteRadio').prop("checked", false);
+        });
+
+        $('#favoriteRadio').change(function() {
+            $('#collegeCheck').prop("checked", false);
+            $('#pokerCheck').prop("checked", false);
+            $('#motorCheck').prop("checked", false);
+
+            $.get("/favorite").done(function(data){
+                console.log("hi");
+                line = "<h2 align='center'>Favorite Articles</h2>";
+                for (i = 0; i < data.length; i++){
+                    line += '<a href="'+data[i]+'" target="_blank">'+data[i]+'</a></p>';
+                }
+                document.querySelector("#content").innerHTML = line;
+            });
         });
 
         function refreshContent(){
             var collegeUrl = "http://www.espn.com/espn/rss/espnu/news";
-            var pokerUrl = "http://www.espn.com/espn/rss/poker/master";
+            var nhlURL = "http://www.espn.com/espn/rss/NHL/news";;
             var motorUrl = "http://www.espn.com/espn/rss/rpm/news";
 
             document.querySelector("#content").innerHTML = "<div></div>";
 
             if ($("#collegeCheck").is(":checked")){
-                $.get(collegeUrl).done(function(data){xmlLoaded(data);});
+                $.get(collegeUrl).done(function(data){xmlLoaded(data, "College Story");});
             }
             if ($("#pokerCheck").is(":checked")){
-                $.get(pokerUrl).done(function(data){xmlLoaded(data);});
+                $.get(nhlURL).done(function(data){xmlLoaded(data, "Poker Story");});
             }
             if ($("#motorCheck").is(":checked")){
-                $.get(motorUrl).done(function(data){xmlLoaded(data);});
+                $.get(motorUrl).done(function(data){xmlLoaded(data, "Motor Story");});
             }
         }
         
-        function xmlLoaded(obj){
+        function xmlLoaded(obj, storyType){
             console.log("obj = " +obj);
             var items = obj.querySelectorAll("item");
             
@@ -72,22 +110,45 @@
                 //get the data out of the item
                 var newsItem = items[i];
                 var title = newsItem.querySelector("title").firstChild.nodeValue;
-                console.log(title);
                 var description = newsItem.querySelector("description").firstChild.nodeValue;
                 var link = newsItem.querySelector("link").firstChild.nodeValue;
                 var pubDate = newsItem.querySelector("pubDate").firstChild.nodeValue;
                 
                 //present the item as HTML
-                var line = '<div class="item">';
+                var line = '<div class="item" data-pub-date="'+pubDate+'">';
                 line += "<h2>"+title+"</h2>";
+                line += '<p>'+storyType+'</p>'
                 line += '<p><i>'+pubDate+'</i> - <a href="'+link+'" target="_blank">Full Article</a></p>';
+                line += '<input type="button" class="favorite" value="Favorite" data-item-link="'+link+'">';
                 line += "</div>";
                 
                 html += line;
             }
+
             document.querySelector("#content").innerHTML += html;
             $("#content").fadeIn(1000);
+
+            //sort by date
+            var stories = $('.item');
+            stories.sort(function(a, b){
+                console.log(new Date($(a).data("pub-date")));
+                console.log(new Date($(b).data("pub-date")));
+                console.log(new Date($(a).data("pub-date")) < new Date($(b).data("pub-date")));
+                return new Date($(a).data("pub-date")) > new Date($(b).data("pub-date"));
+            });
+
+            console.log(stories);
+
+            $("#content").html(stories.sort());
+
+            $('.favorite').click(function() {
+                $.ajax("/favorite", {
+                    type: "POST",
+                    data: {"favorite" : $(this).data("item-link")},
+                });
+            });
         }
+
     </script>
 
 </body>

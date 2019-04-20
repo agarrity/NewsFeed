@@ -7,18 +7,14 @@
 <body>
     <div class="main">
         <form class="form" method="post" action="#">
-            <h2>Login To See Sports News</h2>
+            <h2>Create Account</h2>
             <label>Username :</label>
             <input type="text" name="username" id="username">
             <label>Password :</label>
             <input type="password" name="password" id="password">
-            <input type="button" name="login" id="login" value="Login">
-        </form>
-    </div>
-
-    <div>
-        <form action="/newUser" method="GET">
-            <input type="submit" name="createaccount" id="createaccount" value="Create Account">
+            <label>Re Enter Password :</label>
+            <input type="password" name="repassword" id="repassword">
+            <input type="button" name="login" id="login" value="Submit">
         </form>
     </div>
 
@@ -27,8 +23,14 @@
             $("#login").click(function(){
                 var username = $("#username").val();
                 var password = $("#password").val();
+                var repassword = $("#repassword").val();
 
-                $.ajax("/login", {
+                if (password != repassword){
+                    alert('Passwords do not match.');
+                    return;
+                }
+
+                $.ajax("/newUser", {
                     type: "POST",
                     data: {"username" : username, "password" : password },
                     statusCode: {
@@ -36,7 +38,7 @@
                             window.location.replace("/");
                         },
                         400: function (response) {
-                            alert('Incorrect username or password');
+                            alert('That username has been taken.  Choose another.');
                         }
                     }
                 });

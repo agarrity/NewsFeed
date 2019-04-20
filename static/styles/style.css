@@ -32,8 +32,3 @@ body * {
 .item p {
     padding-top: 0.2em;
 }
-
-#collegeSelector, #pokerSelector, #motorSelector {display: inline-block; *display: inline; zoom: 1; vertical-align: top; font-size: 12px;}
-    #collegeSelector {width: 33%; border: 1px solid black}
-    #pokerSelector {width: 33%; border: 1px solid black}
-    #motorSelector {width: 33%; border: 1px solid black}
